@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theater Seat Selector</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #333; color: #fff; display: flex; justify-content: center; padding: 20px; }
+        .theater-container { max-width: 800px; width: 100%; text-align: center; }
+        h1 { color: #ff6347; }
+        
+        .screen { margin: 20px auto; width: 80%; padding: 10px; background: #888; border-radius: 5px; color: #333; }
+        .section-title { font-weight: bold; margin-top: 10px; color: #ff6347; }
+        .seat-map { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; justify-content: center; }
+        .seat { width: 100%; padding-top: 100%; border-radius: 5px; background-color: #28a745; cursor: pointer; position: relative; }
+        .seat.selected { background-color: #ffc107; }
+        .seat.reserved { background-color: #dc3545; cursor: not-allowed; }
+        .seat::after { content: attr(data-seat); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #fff; font-size: 12px; }
+        
+        .summary { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="theater-container">
+        <h1>Select Your Seats</h1>
+        <div class="screen">SCREEN</div>
+
+        <div class="section-title">Prime - ₹99.00</div>
+        <div class="seat-map" id="prime-seat-map"></div>
+
+        <div class="section-title">Classic - ₹99.00</div>
+        <div class="seat-map" id="classic-seat-map"></div>
+
+        <div class="summary">
+            <p>Selected Seats: <span id="selected-seats">None</span></p>
+            <p>Total Price: ₹<span id="total-price">0</span></p>
+            <button id="confirm-selection">Confirm Selection</button>
+        </div>
+    </div>
+
+    <script>
+        const primeSeatCount = 20;
+        const classicSeatCount = 30;
+        const primePrice = 99;
+        const classicPrice = 99;
+        const reservedSeats = [2, 5, 8, 15, 23, 42]; // Example reserved seats
+        const selectedSeats = new Set();
+        let totalPrice = 0;
+
+        function generateSeats(containerId, count, sectionPrice) {
+            const seatMap = document.getElementById(containerId);
+            for (let i = 1; i <= count; i++) {
+                const seat = document.createElement('div');
+                seat.classList.add('seat');
+                seat.dataset.seat = i;
+                seat.dataset.price = sectionPrice;
+                if (reservedSeats.includes(i)) {
+                    seat.classList.add('reserved');
+                    seat.setAttribute('aria-disabled', 'true');
+                } else {
+                    seat.addEventListener('click', () => toggleSeatSelection(seat));
+                }
+                seatMap.appendChild(seat);
+            }
+        }
+
+        function toggleSeatSelection(seat) {
+            const seatNumber = seat.dataset.seat;
+            const seatPrice = parseInt(seat.dataset.price);
+
+            if (selectedSeats.has(seatNumber)) {
+                selectedSeats.delete(seatNumber);
+                seat.classList.remove('selected');
+                totalPrice -= seatPrice;
+            } else {
+                selectedSeats.add(seatNumber);
+                seat.classList.add('selected');
+                totalPrice += seatPrice;
+            }
+            updateSummary();
+        }
+
+        function updateSummary() {
+            document.getElementById('selected-seats').innerText = Array.from(selectedSeats).join(', ') || 'None';
+            document.getElementById('total-price').innerText = totalPrice;
+        }
+
+        document.getElementById('confirm-selection').addEventListener('click', () => {
+            if (selectedSeats.size > 0) {
+                alert(`Confirmed seats: ${Array.from(selectedSeats).join(', ')}\nTotal Price: ₹${totalPrice}`);
+            } else {
+                alert('No seats selected.');
+            }
+        });
+        // Generate seats for Prime and Classic sections
+        generateSeats('prime-seat-map', primeSeatCount, primePrice);
+        generateSeats('classic-seat-map', classicSeatCount, classicPrice);
+    </script>
+</body>
+</html>
